@@ -60,8 +60,8 @@ int main()
 		{
 			std::cout << "[!] Could not allocate memory in remote X4.exe";
 			CloseHandle(x4_proc_address);
+			return -1;
 		}
-
 
 		SIZE_T num_ofbytes_written = 0;
 		if (!WriteProcessMemory(x4_proc_address, money_remote_param, &money_amount, sizeof(money_amount), &num_ofbytes_written))
@@ -69,6 +69,7 @@ int main()
 			std::cout << "[-] Trouble writing memory to process!! Error code: " << ::GetLastError() << "\n";
 			VirtualFreeEx(x4_proc_address, money_remote_param, 0, MEM_RELEASE);
 			CloseHandle(x4_proc_address);
+			return -1;
 		}
 
 		if (!ReadProcessMemory(x4_proc_address, money_remote_param, &remote_check, sizeof(money_amount), &num_ofbytes_read))
@@ -76,6 +77,7 @@ int main()
 			std::cout << "[-] Could not read memory at " << (char*)money_remote_param << " in remote process. Error code: " << ::GetLastError() << "\n";
 			VirtualFreeEx(x4_proc_address, money_remote_param, 0, MEM_RELEASE);
 			CloseHandle(x4_proc_address);
+			return -1;
 		}
 
 		std::cout << "[+] Successfully wrote bytes\n";
@@ -97,10 +99,8 @@ int main()
 		std::cout << "[+] Success! Cleaning up." << std::endl;
 
 		CloseHandle(x4_remote_exec);
-
 		VirtualFreeEx(x4_proc_address, money_remote_param, 0, MEM_RELEASE);
 		CloseHandle(x4_proc_address);
-
 		FreeLibrary(x4_module);
 
 	}
