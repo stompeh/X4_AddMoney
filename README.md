@@ -11,6 +11,6 @@ AddPlayerMoney(0x51F4D5C00);
 ...and in this moment I'm wondering if it's the memory address of the injected "uint64_t money_amount"  
 
 # Resources
-Very good showcases from the writes of Windows Internals, Pavel Yosifovich.
-https://www.youtube.com/watch?v=IZULG6I4z5U
+Very good showcases from the writes of Windows Internals, Pavel Yosifovich.  
+https://www.youtube.com/watch?v=IZULG6I4z5U  
 https://www.youtube.com/@zodiacon
