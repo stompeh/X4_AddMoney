@@ -43,8 +43,16 @@ int main()
 	SIZE_T num_ofbytes_read;
 	wchar_t x4_filepath[MAX_PATH] = {};
 	uint64_t money_amount = 1; // Any value will max out player money.
+	DWORD x4_pid = 0;
 
-	HANDLE x4_proc_address = OpenProcess(PROCESS_ALL_ACCESS, 0, GetX4ProcessPID());
+	x4_pid = GetX4ProcessPID();
+	if (x4_pid == 0)
+	{
+		std::cout << "[-] Could not locate X4.exe process\n";
+		return -1;
+	}
+
+	HANDLE x4_proc_address = OpenProcess(PROCESS_ALL_ACCESS, 0, x4_pid);
 	GetModuleFileNameEx(x4_proc_address, NULL, x4_filepath, MAX_PATH); // Get exe filepath
 
 	HMODULE x4_module = LoadLibraryEx(x4_filepath, NULL, NULL);
