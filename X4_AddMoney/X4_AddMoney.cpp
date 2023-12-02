@@ -56,30 +56,52 @@ int main()
 	try
 	{
 		money_remote_param = VirtualAllocEx(x4_proc_address, NULL, sizeof(money_amount), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+		if (money_remote_param == NULL)
+		{
+			std::cout << "[!] Could not allocate memory in remote X4.exe";
+			CloseHandle(x4_proc_address);
+		}
+
 
 		SIZE_T num_ofbytes_written = 0;
 		if (!WriteProcessMemory(x4_proc_address, money_remote_param, &money_amount, sizeof(money_amount), &num_ofbytes_written))
 		{
 			std::cout << "[-] Trouble writing memory to process!! Error code: " << ::GetLastError() << "\n";
+			VirtualFreeEx(x4_proc_address, money_remote_param, 0, MEM_RELEASE);
+			CloseHandle(x4_proc_address);
 		}
 
 		if (!ReadProcessMemory(x4_proc_address, money_remote_param, &remote_check, sizeof(money_amount), &num_ofbytes_read))
 		{
 			std::cout << "[-] Could not read memory at " << (char*)money_remote_param << " in remote process. Error code: " << ::GetLastError() << "\n";
+			VirtualFreeEx(x4_proc_address, money_remote_param, 0, MEM_RELEASE);
+			CloseHandle(x4_proc_address);
 		}
 
-		if (money_amount == remote_check)
-		{
-			std::cout << "[+] Successfully wrote bytes\n";
-		}
-
-		DWORD thread_id;
+		std::cout << "[+] Successfully wrote bytes\n";
 
 		std::cout << "[.] Attempting to execute AddPlayerMoney\n";
 
-		HANDLE dothething = CreateRemoteThreadEx(x4_proc_address, 0, 0, (LPTHREAD_START_ROUTINE)money_add_proc, money_remote_param, 0, NULL, &thread_id);
+		DWORD thread_id;
+		HANDLE x4_remote_exec = CreateRemoteThreadEx(x4_proc_address, 0, 0, (LPTHREAD_START_ROUTINE)money_add_proc, money_remote_param, 0, NULL, &thread_id);
+		if (x4_remote_exec == NULL)
+		{
+			std::cout << "[!] Could not create remote thread";
+			VirtualFreeEx(x4_proc_address, money_remote_param, 0, MEM_RELEASE);
+			CloseHandle(x4_remote_exec);
+			return -1;
+		}
+
+		WaitForSingleObject(x4_remote_exec, INFINITE);
+		
 		std::cout << "[+] Success! Cleaning up." << std::endl;
+
+		CloseHandle(x4_remote_exec);
+
 		VirtualFreeEx(x4_proc_address, money_remote_param, 0, MEM_RELEASE);
+		CloseHandle(x4_proc_address);
+
+		FreeLibrary(x4_module);
 
 	}
 	catch (std::exception ex)
